@@ -1,0 +1,536 @@
+<?php
+// Start session and create CSRF token for secure form handling
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrfToken = $_SESSION['csrf_token'];
+?>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TVHUB Movie Library | Cinema Auditorium &amp; Film Explorer</title>
+  <meta name="description" content="Explore TVHUB's premier Movie Library. Search television shows and movies via the TVMaze API, collect your favourites, and book cinema screenings.">
+  <meta name="keywords" content="TVHUB, movies, cinema, TVMaze, movie library, auditorium, film screening">
+  
+  <!-- Open Graph / Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="TVHUB Movie Library">
+  <meta property="og:description" content="Discover, search and collect your favourite movies and TV shows at TVHUB.">
+  <meta property="og:image" content="assets/images/hero-cinema.jpg">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Accessible Skip to Main Content Link (WCAG 2.1 AA) -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- =========================================================================
+       1. HEADER & TOP NAVIGATION
+       ========================================================================= -->
+  <header id="site-header" class="site-header" role="banner">
+    <div class="container header-container">
+      
+      <!-- Brand Logo: TVHUB -->
+      <a href="#hero" class="brand-link" aria-label="TVHUB Homepage" dir="ltr">
+        <svg class="brand-logo-svg" viewBox="0 0 170 36" fill="none" role="img" aria-label="TVHUB Brand" direction="ltr" style="direction: ltr;">
+          <g fill="#E5A900">
+            <circle cx="16" cy="18" r="4" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(30 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(60 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(90 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(120 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(150 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(180 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(210 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(240 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(270 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(300 16 18)" fill="#E5A900" />
+            <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(330 16 18)" fill="#E5A900" />
+          </g>
+          <text x="38" y="25" direction="ltr" unicode-bidi="bidi-override" text-anchor="start" font-family="'Outfit', 'Inter', sans-serif" font-size="20" font-weight="800" fill="#FFFFFF" letter-spacing="0.5">TVHUB</text>
+        </svg>
+      </a>
+
+      <!-- Desktop Navigation Menu matching Figma -->
+      <nav class="desktop-nav" aria-label="Main Navigation">
+        <ul class="nav-list">
+          <li><a href="#hero" class="nav-link active" aria-current="page">Home</a></li>
+          <li><a href="#screens" class="nav-link">Our Screens</a></li>
+          <li><a href="#schedule" class="nav-link">Schedule</a></li>
+          <li><a href="#library" class="nav-link">Movie Library</a></li>
+          <li><a href="#contact" class="nav-link">Location &amp; Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Action Controls & Hamburger Toggle -->
+      <div class="header-actions">
+        <!-- Optional Requirement: RTL / LTR Toggle Button -->
+        <button type="button" class="action-btn-pill rtl-toggle-btn" aria-label="Toggle text direction right-to-left" title="Toggle RTL / LTR direction">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>RTL</span>
+        </button>
+
+        <!-- Favorites Badge Counter -->
+        <a href="#library" class="favorites-counter-btn" aria-label="View saved favorite movies">
+          <span aria-hidden="true">❤️</span>
+          <span class="fav-badge-count">3</span>
+        </a>
+
+        <!-- Working Hamburger Menu Icon Button -->
+        <button 
+          type="button" 
+          class="hamburger-btn" 
+          id="hamburger-btn" 
+          aria-label="Toggle navigation menu" 
+          aria-expanded="false" 
+          aria-controls="mobile-drawer"
+        >
+          <span class="hamburger-line line-1"></span>
+          <span class="hamburger-line line-2"></span>
+          <span class="hamburger-line line-3"></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Slide-Out Drawer -->
+  <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" aria-hidden="true"></div>
+  <aside class="mobile-drawer" id="mobile-drawer" aria-label="Mobile Navigation Menu">
+    <nav>
+      <ul class="mobile-nav-list">
+        <li><a href="#hero" class="mobile-nav-link"><span>Home</span> <span>&rarr;</span></a></li>
+        <li><a href="#screens" class="mobile-nav-link"><span>Our Screens</span> <span>&rarr;</span></a></li>
+        <li><a href="#schedule" class="mobile-nav-link"><span>Schedule</span> <span>&rarr;</span></a></li>
+        <li><a href="#library" class="mobile-nav-link"><span>Movie Library</span> <span>&rarr;</span></a></li>
+        <li><a href="#contact" class="mobile-nav-link"><span>Location &amp; Contact</span> <span>&rarr;</span></a></li>
+      </ul>
+    </nav>
+    <div class="mobile-drawer-footer">
+      <button type="button" class="action-btn-pill rtl-toggle-btn" style="width: 100%; justify-content: center;">
+        <span>Toggle RTL / LTR Mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================= -->
+  <main id="main-content">
+
+    <!-- =======================================================================
+         2. MAIN VISUAL (HERO SECTION)
+         Large auditorium image + Slideshow with multiple images + Video Mode
+         ======================================================================= -->
+    <section id="hero" class="hero-section" aria-label="Featured Cinema Auditorium">
+      
+      <!-- Image Slideshow -->
+      <div class="hero-slideshow" id="hero-slideshow">
+        <!-- Slide 1: Main Auditorium matching Figma -->
+        <div class="hero-slide active">
+          <img 
+            src="assets/images/hero-slide-1.jpg" 
+            alt="Cinema auditorium with red plush seating and ambient spotlights" 
+            class="hero-slide-img"
+          />
+        </div>
+        <!-- Slide 2: IMAX Cosmic Theatre -->
+        <div class="hero-slide">
+          <img 
+            src="assets/images/hero-slide-2.jpg" 
+            alt="Futuristic IMAX theatre with curved giant screen" 
+            class="hero-slide-img" 
+            loading="lazy"
+          />
+        </div>
+        <!-- Slide 3: Historic Grand Cinema -->
+        <div class="hero-slide">
+          <img 
+            src="assets/images/hero-slide-3.jpg" 
+            alt="Grand classic cinema auditorium with golden chandeliers and tiered balconies" 
+            class="hero-slide-img" 
+            loading="lazy"
+          />
+        </div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Slideshow Navigation Arrows -->
+        <button type="button" class="hero-nav-arrow hero-nav-prev" id="hero-prev-btn" aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="hero-nav-arrow hero-nav-next" id="hero-next-btn" aria-label="Next slide">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Slideshow Indicators & Pause Control -->
+        <div class="hero-dots-container" id="hero-dots-container"></div>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         3. SITE INTRODUCTION SECTION
+         ======================================================================= -->
+    <section id="intro" class="intro-section" aria-labelledby="intro-title">
+      <div class="container">
+        <h1 id="intro-title" class="intro-title">Movie Library</h1>
+        <p class="intro-lead">
+          Welcome to TVHUB, your premier gateway to cinematic excellence and television discovery. Browse our curated catalog of blockbuster movies, award-winning series, and cult classics. Seamlessly search titles using the TVMaze database, collect your personal favourites into your custom grid, and explore screening schedules at our luxury auditoriums.
+        </p>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         4. COLLECT YOUR FAVORITES SECTION
+         Search input, TVMaze API connection, add to grid, remove from grid
+         ======================================================================= -->
+    <section id="library" class="favorites-section" aria-labelledby="favorites-title">
+      <div class="container">
+        
+        <!-- Section Header Bar matching Figma -->
+        <div class="favorites-header-bar">
+          <h2 id="favorites-title" class="favorites-title">Collect your favourites</h2>
+          
+          <!-- Search input field matching Figma -->
+          <div class="search-wrapper">
+            <div class="search-input-box">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input 
+                type="search" 
+                id="movie-search-input" 
+                class="search-input" 
+                placeholder="Search title and add to grid" 
+                aria-label="Search movies via TVMaze API" 
+                autocomplete="off"
+              />
+              <div class="search-spinner" id="search-spinner" aria-hidden="true"></div>
+              <button type="button" class="search-clear-btn" id="search-clear-btn" aria-label="Clear search input">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Autocomplete Dropdown List -->
+            <div class="search-dropdown" id="search-dropdown" role="region" aria-live="polite">
+              <ul class="search-results-list" id="search-results-list"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Chips & Actions Toolbar -->
+        <div class="grid-controls-bar">
+          <div class="filter-chips" role="group" aria-label="Filter movies by genre">
+            <button type="button" class="filter-chip active" data-filter="all">All</button>
+            <button type="button" class="filter-chip" data-filter="Action">Action</button>
+            <button type="button" class="filter-chip" data-filter="Sci-Fi">Sci-Fi</button>
+            <button type="button" class="filter-chip" data-filter="Western">Western</button>
+            <button type="button" class="filter-chip" data-filter="Adventure">Adventure</button>
+            <button type="button" class="filter-chip" data-filter="Fantasy">Fantasy</button>
+          </div>
+
+          <div class="grid-actions">
+            <button type="button" class="grid-action-btn" id="btn-reset-default" title="Restore the 3 default Figma movies">
+              ↺ Reset Defaults
+            </button>
+            <button type="button" class="grid-action-btn" id="btn-clear-grid" title="Clear all movies from grid">
+              ✕ Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Movie Grid (Desktop: 3 in a row, Tablet: 2, Mobile: 1) -->
+        <div class="movie-grid" id="movie-grid" role="region" aria-label="Favorites Movie Grid">
+          <!-- Populated dynamically via app.js -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Additional Screenings & Schedule anchors for seamless page navigation -->
+    <div id="screens"></div>
+    <div id="schedule"></div>
+
+    <!-- =======================================================================
+         5. CONTACT US ("HOW TO REACH US") SECTION
+         Form with JS & PHP validation + Embedded Google Maps (eBEYONDS location)
+         ======================================================================= -->
+    <section id="contact" class="contact-section" aria-labelledby="contact-heading">
+      <div class="container">
+        
+        <header class="contact-header">
+          <h2 id="contact-heading" class="contact-title">How to reach us</h2>
+          <p class="contact-subtitle">Have questions about upcoming screenings, private theater reservations, or movie requests? Connect with our dedicated guest relations team.</p>
+        </header>
+
+        <div class="contact-layout">
+          
+          <!-- Column 1: Contact Form -->
+          <div class="form-column">
+            
+            <!-- Success / Error Alert Messages (WCAG Live Region) -->
+            <div id="form-alert-success" class="form-alert success" role="alert" aria-live="polite"></div>
+            <div id="form-alert-error" class="form-alert error" role="alert" aria-live="polite"></div>
+
+            <form id="contact-form" class="contact-form" action="api/contact.php" method="POST" novalidate>
+              <!-- CSRF Token -->
+              <input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+
+              <!-- First Name & Last Name (2 columns on desktop) -->
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label for="first-name" class="form-label">
+                    First Name <span class="required-mark" aria-hidden="true">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="first-name" 
+                    name="firstName" 
+                    class="form-control" 
+                    placeholder="First Name" 
+                    required 
+                    aria-required="true" 
+                    aria-describedby="first-name-error"
+                  />
+                  <span id="first-name-error" class="field-error-msg" role="alert"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="last-name" class="form-label">
+                    Last Name <span class="required-mark" aria-hidden="true">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="last-name" 
+                    name="lastName" 
+                    class="form-control" 
+                    placeholder="Last Name" 
+                    required 
+                    aria-required="true" 
+                    aria-describedby="last-name-error"
+                  />
+                  <span id="last-name-error" class="field-error-msg" role="alert"></span>
+                </div>
+              </div>
+
+              <!-- Email Field -->
+              <div class="form-group">
+                <label for="email-address" class="form-label">
+                  Email <span class="required-mark" aria-hidden="true">*</span>
+                </label>
+                <input 
+                  type="email" 
+                  id="email-address" 
+                  name="email" 
+                  class="form-control" 
+                  placeholder="Email" 
+                  required 
+                  aria-required="true" 
+                  aria-describedby="email-address-error"
+                />
+                <span id="email-address-error" class="field-error-msg" role="alert"></span>
+              </div>
+
+              <!-- Phone Number Field (Optional) -->
+              <div class="form-group">
+                <label for="phone-number" class="form-label">
+                  Telephone
+                </label>
+                <input 
+                  type="tel" 
+                  id="phone-number" 
+                  name="phone" 
+                  class="form-control" 
+                  placeholder="Telephone" 
+                  aria-describedby="phone-number-error"
+                />
+                <span id="phone-number-error" class="field-error-msg" role="alert"></span>
+              </div>
+
+              <!-- Comments Field -->
+              <div class="form-group">
+                <label for="comments-msg" class="form-label">
+                  Message <span class="required-mark" aria-hidden="true">*</span>
+                </label>
+                <textarea 
+                  id="comments-msg" 
+                  name="comments" 
+                  class="form-control" 
+                  rows="4" 
+                  placeholder="Message" 
+                  required 
+                  aria-required="true" 
+                  aria-describedby="comments-msg-error"
+                ></textarea>
+                <span id="comments-msg-error" class="field-error-msg" role="alert"></span>
+              </div>
+
+              <!-- Terms & Conditions Checkbox -->
+              <div class="terms-agreement">
+                <input 
+                  type="checkbox" 
+                  id="agree-terms" 
+                  name="terms" 
+                  class="custom-checkbox" 
+                  required 
+                  aria-required="true" 
+                  aria-describedby="agree-terms-error"
+                />
+                <label for="agree-terms" class="checkbox-label">
+                  * I agree to the <a href="#privacy">Terms &amp; Conditions</a>
+                </label>
+              </div>
+              <span id="agree-terms-error" class="field-error-msg" role="alert"></span>
+
+              <!-- Submit Button matching Figma -->
+              <div>
+                <button type="submit" class="btn-submit" id="btn-submit-form">
+                  <span class="btn-spinner" aria-hidden="true"></span>
+                  <span>Submit</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Column 2: Google Maps Embed (eBEYONDS location) -->
+          <div class="map-column">
+            <div class="map-card" role="region" aria-label="eBEYONDS Location Map">
+              <iframe 
+                src="https://maps.google.com/maps?q=eBEYONDS%20Pvt%20Ltd%2C%20470%20Pannipitiya%20Rd%2C%20Battaramulla%2010120%2C%20Sri%20Lanka&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed" 
+                class="map-iframe" 
+                title="Google Maps Location: eBEYONDS (Pvt) Ltd"
+                loading="lazy" 
+                allowfullscreen
+              ></iframe>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       6. FOOTER SECTION
+       ========================================================================= -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      
+      <div class="footer-top">
+        <a href="#hero" class="brand-link" aria-label="TVHUB Homepage" dir="ltr">
+          <svg class="brand-logo-svg" viewBox="0 0 170 36" fill="none" direction="ltr" style="direction: ltr;">
+            <g fill="#E5A900">
+              <circle cx="16" cy="18" r="4" fill="#E5A900" />
+              <ellipse cx="16" cy="7" rx="1.8" ry="3.5" fill="#E5A900" />
+              <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(60 16 18)" fill="#E5A900" />
+              <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(120 16 18)" fill="#E5A900" />
+              <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(180 16 18)" fill="#E5A900" />
+              <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(240 16 18)" fill="#E5A900" />
+              <ellipse cx="16" cy="7" rx="1.8" ry="3.5" transform="rotate(300 16 18)" fill="#E5A900" />
+            </g>
+            <text x="38" y="25" direction="ltr" unicode-bidi="bidi-override" text-anchor="start" font-family="'Outfit', 'Inter', sans-serif" font-size="20" font-weight="800" fill="#FFFFFF" letter-spacing="0.5">TVHUB</text>
+          </svg>
+        </a>
+
+        <div class="footer-social-wrapper">
+          <span class="footer-social-label">Follow us on</span>
+          <ul class="social-links" aria-label="Social media channels">
+            <li>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="Twitter">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                </svg>
+              </a>
+            </li>
+            <li>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="YouTube">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#0C0D10"></polygon>
+                </svg>
+              </a>
+            </li>
+            <li>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                  <rect x="2" y="9" width="4" height="12"></rect>
+                  <circle cx="4" cy="4" r="2"></circle>
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; <?php echo date('Y'); ?> TVHUB Movie Hub. All rights reserved.</p>
+        <ul class="footer-links">
+          <li><a href="#privacy">Privacy Policy</a></li>
+          <li><a href="#terms">Terms of Service</a></li>
+        </ul>
+        <a href="#hero" class="btn-back-to-top" id="back-to-top-btn">
+          <span>Back to top</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       7. MODALS & NOTIFICATIONS
+       ========================================================================= -->
+  <!-- Movie Details Modal -->
+  <div class="modal-backdrop" id="movie-modal" role="dialog" aria-modal="true" aria-labelledby="modal-movie-title">
+    <div class="modal-dialog">
+      <header class="modal-header">
+        <h3 class="modal-title" id="modal-movie-title">Movie &amp; Show Overview</h3>
+        <button type="button" class="modal-close-btn" id="movie-modal-close" aria-label="Close modal dialog">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </header>
+      <div class="modal-body" id="movie-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Application Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
