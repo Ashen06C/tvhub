@@ -31,8 +31,11 @@ if (!file_exists($mailLogFile)) {
     file_put_contents($mailLogFile, json_encode([], JSON_PRETTY_PRINT));
 }
 
-// Admin email address requirement
-$adminEmail = 'charangaashen@gmail.com';
+// Admin email address requirement (Designated Administrators)
+$adminEmails = [
+    'dumidu.kodithuwakku@ebeyonds.com',
+    'prabhath.senadheera@ebeyonds.com'
+];
 
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -176,7 +179,7 @@ if ($saved === false) {
 
 // EMAIL DISPATCH SYSTEM
 // 1. Auto-response email to the user
-// 2. Admin notification email to charangaashen@gmail.com
+// 2. Admin notification email to designated administrators
 
 $mailResults = [
     'userAutoResponse' => false,
@@ -281,7 +284,9 @@ $mailResults['userAutoResponse'] = true;
 
 // ADMIN NOTIFICATION EMAIL
 $adminSubject = "[New Contact Submission] " . $firstName . " " . $lastName . " - Ref: " . $submissionId;
-$adminBody = '
+
+foreach ($adminEmails as $adminEmail) {
+    $adminBody = '
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -360,9 +365,10 @@ $adminBody = '
 </html>
 ';
 
-$adminHeaders = $headersCommon . "Reply-To: " . $email . "\r\n";
-$sentAdmin = @mail($adminEmail, $adminSubject, $adminBody, $adminHeaders);
-logEmail($adminEmail, $adminSubject, $adminBody, $adminHeaders, $sentAdmin);
+    $adminHeaders = $headersCommon . "Reply-To: " . $email . "\r\n";
+    $sentAdmin = @mail($adminEmail, $adminSubject, $adminBody, $adminHeaders);
+    logEmail($adminEmail, $adminSubject, $adminBody, $adminHeaders, $sentAdmin);
+}
 $mailResults['adminNotification'] = true;
 
 // Return successful JSON response
@@ -375,7 +381,7 @@ echo json_encode([
         'emailsSent'   => [
             'autoResponse' => $mailResults['userAutoResponse'],
             'adminNotification' => $mailResults['adminNotification'],
-            'adminTarget'  => $adminEmail
+            'adminTargets' => $adminEmails
         ]
     ]
 ]);
